@@ -1,11 +1,5 @@
 # BugsBunnyLostinTime
 
-<!-- retcomm-readme-metrics -->
-[![GitHub downloads (all assets, all releases)](https://img.shields.io/github/downloads/RetroPortingToolKit/BugsBunnyLostinTime/total)](https://github.com/RetroPortingToolKit/BugsBunnyLostinTime/releases)
-[![GitHub downloads (latest release)](https://img.shields.io/github/downloads/RetroPortingToolKit/BugsBunnyLostinTime/latest/total)](https://github.com/RetroPortingToolKit/BugsBunnyLostinTime/releases/latest)
-[![GitHub release](https://img.shields.io/github/v/release/RetroPortingToolKit/BugsBunnyLostinTime)](https://github.com/RetroPortingToolKit/BugsBunnyLostinTime/releases/latest)
-<!-- /retcomm-readme-metrics -->
-
 Static recompilation of **BugsBunnyLostinTime** built on
 [psxrecomp](https://github.com/mstan/psxrecomp) and
 [recomp-ui](https://github.com/RetroPortingToolKit/recomp-ui).

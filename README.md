@@ -12,6 +12,8 @@ Static recompilation of **BugsBunnyLostinTime** built on
 
 Bugs Bunny: Lost in Time (USA, 	SLUS-00838) statically recompiled to a native PC executable with PSXRecomp.
 
+![BugsBunnyLostinTime](/docs/BugsBunnyLostinTimeRecomp.png)
+
 | | |
 |---|---|
 | Players | 1 |

@@ -1,0 +1,54 @@
+# Autofilled by tools/new_project_layout/probe_disc.py from your legal dump.
+# Review before shipping. Runtime quirks / overlay seeds still need hand work.
+
+[game]
+name = "BugsBunnyLostinTime"
+id = "SLUS-00838"
+players = 1
+exe = "disc/SLUS_008.38"
+disc = "/Users/dominikblunck/Documents/Entwicklung/recomp/bugsbunny/Bugs Bunny - Lost in Time (USA) (En,Fr,Es).cue"
+load_address = "0x80014A00"
+entry_pc = "0x80014A08"
+text_size = "0x00055000"
+stack_base = "0x801FFFF0"
+
+# Digests are for data Track 01 (first BINARY FILE / TRACK 01).
+[prepare_disc]
+out_dir = "disc"
+bin_name = "Bugs Bunny - Lost in Time (USA) (En,Fr,Es).bin"
+cue_name = "Bugs Bunny - Lost in Time (USA) (En,Fr,Es).cue"
+boot_exe = "SLUS_008.38"
+known_sizes = [587047440]
+known_md5 = [
+  "ba5450777c860ac420df5d4f30e2c010",
+]
+known_sha1 = [
+  "6024341f559c3789b5612e941c8d0ab227ff6361",
+]
+known_crc32 = [
+  "54b8f5a3",
+]
+
+[recompiler]
+seeds = "seeds/ghidra_funcs.txt"
+out_dir = "generated"
+strict = true
+
+[runtime]
+window_title = "BugsBunnyLostinTime Recompiled"
+memcard_dir = "saves"
+overlay_cache = true
+
+[video]
+renderer = "opengl"
+aspect_ratio = "4:3"
+
+[controller]
+default_mode = "digital"
+
+# Online mount gate: digests + track count + optional TOC fingerprint
+# (see docs/NETPLAY.md).
+[netplay]
+require_cue = true
+required_tracks = 1
+required_disc_fp = "1f0e4c32e122950566dbd30603edf9ff5cfe005c842d0df5dba3fe6916389ea3"

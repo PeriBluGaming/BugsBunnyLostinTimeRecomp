@@ -10,14 +10,14 @@ Static recompilation of **BugsBunnyLostinTime** built on
 [psxrecomp](https://github.com/mstan/psxrecomp) and
 [recomp-ui](https://github.com/RetroPortingToolKit/recomp-ui).
 
-_Add a short pitch in catalog_identity.json / README._
+Bugs Bunny: Lost in Time (USA, 	SLUS-00838) statically recompiled to a native PC executable with PSXRecomp.
 
 | | |
 |---|---|
 | Players | 1 |
 | Region | USA |
-| Publisher | — |
-| Year | — |
+| Publisher | Infogrames |
+| Year | 1999 |
 
 Scaffolded with the New Project Layout. See
 `psxrecomp/docs/GAME_PROJECT_SETUP.md` for the full flow.

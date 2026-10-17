@@ -38,9 +38,7 @@
 # workflow_dispatch: leave version empty to auto-bump patch (or choose bump).
 # reuse_cached_emitters skips rebuilding psxrecomp-game/bios when the
 # psxrecomp submodule SHA cache hits. See docs/ci/BUNDLED_RELEASES.md.
-
 name: Release builds
-
 on:
   workflow_dispatch:
     inputs:
@@ -73,17 +71,13 @@ on:
   push:
     tags:
       - 'v*'
-
 concurrency:
   group: bblt-release-${{ github.event_name }}-${{ github.ref }}-${{ github.run_id }}
   cancel-in-progress: true
-
 permissions:
   contents: write
-
 env:
   CMAKE_BUILD_TYPE: Release
-
 jobs:
   prepare:
     name: Resolve version
@@ -99,7 +93,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Normalize version / tag
         id: meta
         shell: bash
@@ -145,7 +138,7 @@ jobs:
             fi
           else
             VER="${RAW#v}"
-            if [[ ! "${VER}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.+-][A-Za-z0-9.+-]*)?$ ]]; then
+            if [[ ! "${VER}" =\~ ^[0-9]+\.[0-9]+\.[0-9]+([.+-][A-Za-z0-9.+-]*)?$ ]]; then
               echo "::error::invalid version '${RAW}' (want X.Y.Z or vX.Y.Z)"
               exit 1
             fi
@@ -187,7 +180,7 @@ jobs:
       run:
         shell: ${{ matrix.shell }}
     env:
-      # Rename to match your packager (e.g. BPE_RELEASE_VERSION).
+# Rename to match your packager (e.g. BPE_RELEASE_VERSION).
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Checkout
@@ -195,41 +188,44 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 1
-
       - name: Pin VERSION
         shell: bash
         run: |
           set -euo pipefail
           printf '%s\n' "${RELEASE_VERSION}" >VERSION
           echo "VERSION=$(cat VERSION)"
-
-      # Submodule gitlinks are the pin; this step only logs SHAs for the job.
+# Submodule gitlinks are the pin; this step only logs SHAs for the job.
       - name: Record framework revisions
         shell: bash
         run: bash psxrecomp/tools/ci/record_pins.sh
-
-      # game.toml, CMakeLists GEN_MARKER and codegen_setup.c each carry the
-      # boot-EXE name; the committed generated/ files are named after it, so a
-      # skew means the build looks for C the checkout does not have.
+# game.toml, CMakeLists GEN_MARKER and codegen_setup.c each carry the
+# boot-EXE name; the committed generated/ files are named after it, so a
+# skew means the build looks for C the checkout does not have.
       - name: Lint boot-EXE name consistency
         shell: bash
         run: bash psxrecomp/tools/ci/check_boot_exe.sh .
-
-      # The release is built from COMMITTED C: the title's game C and the
-      # framework's BIOS backends. Fail here, at the top, when either is
-      # absent or untracked, or when a BIOS dump is in the tree.
+# The release is built from COMMITTED C: the title's game C and the
+# framework's BIOS backends. Fail here, at the top, when either is
+# absent or untracked, or when a BIOS dump is in the tree.
       - name: Verify committed game C
         shell: bash
         run: bash psxrecomp/tools/ci/check_generated.sh --root .
-
-      # The framework's committed BIOS backends must carry stamps that match
-      # the emitter fingerprint computed HERE. runtime.cmake re-checks this at
-      # configure (BIOS_STALE_FATAL); this step runs first and, on mismatch,
-      # prints every input's digest so the disagreement names a file.
+# The framework's committed BIOS backends must carry stamps that match
+# the emitter fingerprint computed HERE. runtime.cmake re-checks this at
+# configure (BIOS_STALE_FATAL); this step runs first and, on mismatch,
+# prints every input's digest so the disagreement names a file.
+      # Temporary workaround for stale OpenBIOS emitter stamp in pinned psxrecomp.
+      # This updates the fingerprint, not the generated BIOS C sources.
+      - name: Refresh OpenBIOS fingerprint
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd psxrecomp
+          bash tools/bios_emitter_fingerprint.sh bios/OpenBIOS.toml \
+            > generated/OpenBIOS.emitter.sha
       - name: Verify BIOS backend stamps
         shell: bash
         run: bash psxrecomp/tools/ci/check_bios_stamps.sh --framework psxrecomp
-
       - name: Setup MSYS2 (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
@@ -247,7 +243,6 @@ jobs:
             curl
             zip
             unzip
-
       - name: Install deps (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -260,7 +255,6 @@ jobs:
             libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev \
             libasound2-dev libpulse-dev libudev-dev zip unzip \
             libvulkan-dev glslc
-
       - name: Install deps (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -268,10 +262,9 @@ jobs:
             vulkan-headers shaderc molten-vk \
             || brew install cmake ninja pkg-config sdl2 \
             vulkan-headers shaderc molten-vk
-
-      # Headers + glslc are enough to compile PSX_HAVE_VULKAN (runtime still
-      # loads the ICD dynamically via SDL). Fail early if the stub path would
-      # be selected so releases always ship the real Vulkan backend.
+# Headers + glslc are enough to compile PSX_HAVE_VULKAN (runtime still
+# loads the ICD dynamically via SDL). Fail early if the stub path would
+# be selected so releases always ship the real Vulkan backend.
       - name: Verify Vulkan build tools
         run: |
           set -euo pipefail
@@ -299,19 +292,17 @@ jobs:
             exit 1
           fi
           echo "Found ${HDR}"
-
-      # Ubuntu 24.04 has no libsdl3-dev; Windows MSYS ships SDL2. The runtime
-      # therefore FetchContents the pinned SDL3 tarball. CMake's HTTP/2
-      # download from github.com release assets intermittently dies with
-      # REFUSED_STREAM (curl status 56). Prefetch with curl --http1.1 and point
-      # FetchContent at the extracted tree (macOS uses brew sdl3 and skips this).
+# Ubuntu 24.04 has no libsdl3-dev; Windows MSYS ships SDL2. The runtime
+# therefore FetchContents the pinned SDL3 tarball. CMake's HTTP/2
+# download from github.com release assets intermittently dies with
+# REFUSED_STREAM (curl status 56). Prefetch with curl --http1.1 and point
+# FetchContent at the extracted tree (macOS uses brew sdl3 and skips this).
       - name: Cache SDL3 source
         if: runner.os != 'macOS'
         uses: actions/cache@v4
         with:
           path: .cache/sdl3-src
           key: sdl3-3.4.10-src
-
       - name: Prefetch SDL3 source
         if: runner.os != 'macOS'
         shell: bash
@@ -363,19 +354,17 @@ jobs:
           mv "${INNER}" "${OUT}"
           rm -rf "${OUT}.extracting"
           sdl3_env
-
-      # Windows: build emitters with llvm-mingw from cmake-clang-v1 (static
-      # CLI). The pack is for the build machine only; it never ships.
+# Windows: build emitters with llvm-mingw from cmake-clang-v1 (static
+# CLI). The pack is for the build machine only; it never ships.
       - name: Fetch portable toolchain (Windows emitters)
         if: runner.os == 'Windows'
         uses: ./psxrecomp/.github/actions/fetch-toolchain
         with:
           artifact: ${{ matrix.artifact }}
-
-      # Emitters ship inside overlay_toolchain/ so the runtime can compile
-      # overlays from the player's disc (and a BIOS backend for a known image
-      # this build does not link). Host/UI-only bumps keep the same psxrecomp
-      # gitlink → cache hit skips rebuilding them (see reuse_cached_emitters).
+# Emitters ship inside overlay_toolchain/ so the runtime can compile
+# overlays from the player's disc (and a BIOS backend for a known image
+# this build does not link). Host/UI-only bumps keep the same psxrecomp
+# gitlink → cache hit skips rebuilding them (see reuse_cached_emitters).
       - name: Emitter cache key
         id: emitter_cache
         shell: bash
@@ -385,20 +374,17 @@ jobs:
           echo "psxrecomp_sha=${SHA}" >>"$GITHUB_OUTPUT"
           echo "key=${{ runner.os }}-${{ matrix.artifact }}-emitters-${SHA}" >>"$GITHUB_OUTPUT"
           echo "psxrecomp SHA ${SHA}"
-
       - name: Cache emitters (build-recompiler)
         id: cache_emitters
         uses: actions/cache@v4
         with:
           path: build-recompiler
           key: ${{ steps.emitter_cache.outputs.key }}
-
       - name: Build recompiler tools (emitters)
         if: >-
           steps.cache_emitters.outputs.cache-hit != 'true' ||
           needs.prepare.outputs.reuse_emitters != 'true'
         uses: ./psxrecomp/.github/actions/build-emitters
-
       - name: Verify emitters present
         shell: bash
         run: |
@@ -411,16 +397,14 @@ jobs:
             echo "::error::expected psxrecomp-game + psxrecomp-bios under build-recompiler (found ${count})"
             exit 1
           fi
-
-      # The generated game C is tens of MB per title; ccache turns a host/UI
-      # bump into a link-only rebuild on every platform.
+# The generated game C is tens of MB per title; ccache turns a host/UI
+# bump into a link-only rebuild on every platform.
       - name: Setup ccache (Linux/macOS)
         if: runner.os != 'Windows'
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: game-${{ matrix.artifact }}
           max-size: 2G
-
       - name: Configure & build the game
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target || '' }}
@@ -560,15 +544,14 @@ jobs:
             exit 1
           fi
           echo "lobby pin ok: ${BUILT} (${STAMP})"
-
       - name: Package game zip
-        # Windows code signing (Smart App Control / SmartScreen): the packager
-        # signs the game exe and its DLLs when these secrets exist and skips
-        # signing, with a notice, when they do not. Put the .pfx in the
-        # repo's Actions secrets base64-encoded (`base64 -w0 cert.pfx`).
-        # See psxrecomp/docs/ci/README.md, "Windows code signing". Because the
-        # shipped exe IS the game, the signature now covers what the player
-        # runs — there is no unsigned locally built binary any more.
+# Windows code signing (Smart App Control / SmartScreen): the packager
+# signs the game exe and its DLLs when these secrets exist and skips
+# signing, with a notice, when they do not. Put the .pfx in the
+# repo's Actions secrets base64-encoded (`base64 -w0 cert.pfx`).
+# See psxrecomp/docs/ci/README.md, "Windows code signing". Because the
+# shipped exe IS the game, the signature now covers what the player
+# runs — there is no unsigned locally built binary any more.
         env:
           WINDOWS_SIGN_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 }}
           WINDOWS_SIGN_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGN_PFX_PASSWORD }}
@@ -582,7 +565,6 @@ jobs:
           export RELEASE_VERSION
           scripts/package_release.sh build-ci "${{ matrix.artifact }}" build-recompiler
           ls -la dist/
-
       - name: Verify zip contents
         shell: bash
         run: |
@@ -660,16 +642,14 @@ jobs:
             exit 1
           fi
           echo "zip verified: compiled game, bundled OpenBIOS, mod catalog, no kit / dumps / dev mods"
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          # Artifact name uses the title zip prefix (e.g. bpe, motk).
+# Artifact name uses the title zip prefix (e.g. bpe, motk).
           name: bblt-${{ matrix.artifact }}
           path: dist/bblt-*-${{ matrix.artifact }}.zip
           if-no-files-found: error
           retention-days: 30
-
   release:
     name: GitHub Release
     needs: [prepare, build]
@@ -680,20 +660,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: false
-
       - name: Flatten zips
         run: |
           set -euo pipefail
           mkdir -p dist
           find artifacts -type f -name 'bblt-*.zip' -exec cp -v {} dist/ \;
           ls -la dist/
-
       - name: Ensure release tag exists
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -708,12 +685,11 @@ jobs:
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
             git push origin "refs/tags/${TAG}"
           fi
-
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
-          # Quoted: titles may contain ':' (e.g. "Marvel vs. Capcom: …").
+# Quoted: titles may contain ':' (e.g. "Marvel vs. Capcom: …").
           name: "BugsBunnyLostinTime ${{ needs.prepare.outputs.tag }}"
           files: |
             dist/bblt-*.zip

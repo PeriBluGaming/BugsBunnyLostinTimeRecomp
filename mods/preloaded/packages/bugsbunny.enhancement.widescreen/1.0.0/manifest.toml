@@ -13,7 +13,7 @@ game_id = "SLUS-00838"
 [[feature]]
 id = "widescreen"
 name = "16:9 Widescreen"
-description = "Experimental. Renders the game natively in 16:9. Objects may still pop in and out at the left and right edges, and the HUD stays at its 4:3 position."
+description = "Experimental. Renders the game natively in 16:9. Objects may still pop in and out at the left and right edges. The corner HUD moves out to the wide edges."
 group = "Visual"
 default_enabled = false
 

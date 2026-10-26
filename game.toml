@@ -33,6 +33,9 @@ known_crc32 = [
 seeds = "seeds/ghidra_funcs.txt"
 out_dir = "generated"
 strict = true
+# Widescreen HUD hook (mods/src/widescreen.c): the RAM renderer's entries
+# (code loaded at 0x80010000), so natively compiled overlay shards call it too.
+mod_function_entry_funcs = ["0x80010258", "0x80010204"]
 
 [runtime]
 window_title = "BugsBunnyLostinTime Recompiled"

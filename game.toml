@@ -41,7 +41,22 @@ overlay_cache = true
 
 [video]
 renderer = "opengl"
-aspect_ratio = "4:3"
+aspect_ratio = "4:3"   # widescreen is mod-owned; the widescreen feature sets 16:9
+
+# Inert at 4:3. gte_game_mode classifies frames with enough GTE projections
+# as gameplay, so native-wide presents them wide (menus/FMV stay 4:3).
+[widescreen]
+gte_game_mode = true
+
+# Left edge of the RAM renderer's "any vertex on screen" test (0x800113E4,
+# code loaded at 0x80010000): addiu at,zero,-0xFF moves out by the live margin.
+[[widescreen.signed_x_bound]]
+address = "0x800113E8"
+expected = "0x2401FF01"
+
+[widescreen.cull]
+# Right edge of the same test: slti at,t1,0x100 keeps SX < 0x100 + margin.
+slti_sites = ["0x800113F8"]
 
 [controller]
 default_mode = "digital"

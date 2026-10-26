@@ -53,15 +53,48 @@ psxrecomp_add_game_runtime(psx-runtime
     CODEGEN_SETUP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/codegen_setup.c"
 )
 
-# Stage runtime configs next to the exe for direct build/ launches. Only copy
-# files that exist — never fail POST_BUILD when game_options.toml is absent.
+# Bugs Bunny mods: native widescreen (16:9).
+target_sources(psx-runtime PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/mods/src/widescreen.c"
+)
+
+target_include_directories(psx-runtime PRIVATE
+    "${PSXRECOMP_ROOT}/runtime/include"
+)
+
+# Stage runtime configs next to the exe for direct build/ launches. A file-level
+# rule rather than POST_BUILD, so editing only game.toml restages it without a
+# relink (POST_BUILD ran only when the exe was relinked). The exe directory is
+# resolved here: $<TARGET_FILE_DIR:psx-runtime> would make this rule depend on
+# psx-runtime, a cycle. Only copy files that exist — game_options.toml is
+# optional.
+get_target_property(_PSX_RUNTIME_DIR psx-runtime RUNTIME_OUTPUT_DIRECTORY)
+if(NOT _PSX_RUNTIME_DIR)
+    if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(_PSX_RUNTIME_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    else()
+        set(_PSX_RUNTIME_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+endif()
+get_property(_PSX_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(_PSX_MULTI_CONFIG)
+    string(APPEND _PSX_RUNTIME_DIR "/$<CONFIG>")
+endif()
+set(_PSX_STAGED_RUNTIME_CONFIGS "")
 foreach(_PSX_RUNTIME_CONFIG game.toml game_options.toml)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_PSX_RUNTIME_CONFIG}")
-        add_custom_command(TARGET psx-runtime POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        set(_PSX_STAGED "${_PSX_RUNTIME_DIR}/${_PSX_RUNTIME_CONFIG}")
+        # copy (not copy_if_different) refreshes the output's timestamp, so the
+        # rule is satisfied until the source changes again.
+        add_custom_command(OUTPUT "${_PSX_STAGED}"
+            COMMAND ${CMAKE_COMMAND} -E copy
                 "${CMAKE_CURRENT_SOURCE_DIR}/${_PSX_RUNTIME_CONFIG}"
-                "$<TARGET_FILE_DIR:psx-runtime>/${_PSX_RUNTIME_CONFIG}"
+                "${_PSX_STAGED}"
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_PSX_RUNTIME_CONFIG}"
             COMMENT "Staging ${_PSX_RUNTIME_CONFIG}"
             VERBATIM)
+        list(APPEND _PSX_STAGED_RUNTIME_CONFIGS "${_PSX_STAGED}")
     endif()
 endforeach()
+add_custom_target(psx-runtime-configs ALL DEPENDS ${_PSX_STAGED_RUNTIME_CONFIGS})
+add_dependencies(psx-runtime psx-runtime-configs)

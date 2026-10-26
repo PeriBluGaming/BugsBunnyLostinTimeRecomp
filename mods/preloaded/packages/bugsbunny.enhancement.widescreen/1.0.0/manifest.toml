@@ -1,0 +1,22 @@
+format_version = 5
+id = "bugsbunny.enhancement.widescreen"
+version = "1.0.0"
+name = "Widescreen 16:9"
+author = "PeriBluGaming"
+description = "Native 16:9 widescreen for Bugs Bunny: Lost in Time: renders a wider view of the world without stretching characters. Experimental."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLUS-00838"
+
+[[feature]]
+id = "widescreen"
+name = "16:9 Widescreen"
+description = "Experimental. Renders the game natively in 16:9. Objects may still pop in and out at the left and right edges, and the HUD stays at its 4:3 position."
+group = "Visual"
+default_enabled = false
+
+[[plugin]]
+feature = "widescreen"
+id = "bugsbunny.widescreen"

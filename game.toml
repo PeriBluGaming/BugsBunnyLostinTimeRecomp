@@ -6,7 +6,7 @@ name = "BugsBunnyLostinTime"
 id = "SLUS-00838"
 players = 1
 exe = "disc/SLUS_008.38"
-disc = "/Users/dominikblunck/Documents/Entwicklung/recomp/bugsbunny/Bugs Bunny - Lost in Time (USA) (En,Fr,Es).cue"
+disc = ""
 load_address = "0x80014A00"
 entry_pc = "0x80014A08"
 text_size = "0x00055000"
@@ -33,6 +33,9 @@ known_crc32 = [
 seeds = "seeds/ghidra_funcs.txt"
 out_dir = "generated"
 strict = true
+# Widescreen HUD hook (mods/src/widescreen.c): the RAM renderer's entries
+# (code loaded at 0x80010000), so natively compiled overlay shards call it too.
+mod_function_entry_funcs = ["0x80010258", "0x80010204"]
 
 [runtime]
 window_title = "BugsBunnyLostinTime Recompiled"
@@ -41,7 +44,22 @@ overlay_cache = true
 
 [video]
 renderer = "opengl"
-aspect_ratio = "4:3"
+aspect_ratio = "4:3"   # widescreen is mod-owned; the widescreen feature sets 16:9
+
+# Inert at 4:3. gte_game_mode classifies frames with enough GTE projections
+# as gameplay, so native-wide presents them wide (menus/FMV stay 4:3).
+[widescreen]
+gte_game_mode = true
+
+# Left edge of the RAM renderer's "any vertex on screen" test (0x800113E4,
+# code loaded at 0x80010000): addiu at,zero,-0xFF moves out by the live margin.
+[[widescreen.signed_x_bound]]
+address = "0x800113E8"
+expected = "0x2401FF01"
+
+[widescreen.cull]
+# Right edge of the same test: slti at,t1,0x100 keeps SX < 0x100 + margin.
+slti_sites = ["0x800113F8"]
 
 [controller]
 default_mode = "digital"

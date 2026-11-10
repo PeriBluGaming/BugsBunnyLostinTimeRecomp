@@ -115,15 +115,17 @@ Each release provides `bblt-<version>-<platform>.zip`:
 |---|---|---|---|
 | Windows x64 | [`bblt-0.2.0-windows-x64.zip`](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/releases/download/v0.2.0/bblt-0.2.0-windows-x64.zip) | Passed | Not documented |
 | Linux x64 | [`bblt-0.2.0-linux-x64.zip`](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/releases/download/v0.2.0/bblt-0.2.0-linux-x64.zip) | Passed | Not documented |
-| macOS Intel (x64) | [`bblt-0.2.0-macos-x64.zip`](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/releases/download/v0.2.0/bblt-0.2.0-macos-x64.zip) | Passed | Not documented |
+| macOS Intel (x64) | [`bblt-0.2.0-macos-x64.zip`](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/releases/download/v0.2.0/bblt-0.2.0-macos-x64.zip) | Passed | **Tested by maintainer** |
 | macOS Apple Silicon (ARM64) | [`bblt-0.2.0-macos-arm64.zip`](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/releases/download/v0.2.0/bblt-0.2.0-macos-arm64.zip) | Passed | Not documented |
 
 *CI build passed* means the *Release builds* workflow built the v0.2.0 source
 on that platform, packaged it and checked the zip contents automatically
 before attaching it to the release; it does not mean the game was played on
-that platform. The widescreen mod was play-tested by the maintainer before
-release, but the platforms used for that testing are not yet documented, so
-none of the four builds is listed as runtime-tested here.
+that platform. *Tested by maintainer* means the maintainer downloaded the
+published v0.2.0 macOS Intel (x64) release, launched it and tested it,
+including the native 16:9 widescreen mode. No manual runtime testing
+is documented yet for the Windows x64, Linux x64 and macOS Apple Silicon
+builds.
 
 The release zips contain the compiled game, its runtime data, the bundled
 OpenBIOS and the mod catalog. They contain **no** game disc data and no retail
@@ -197,9 +199,10 @@ BIOS/ROM/save plumbing so you are not stuck repeating each game’s first run by
 - **Not every screen is wide.** Menus and FMV keep the original 4:3
   presentation. Because each frame is classified on its own, the picture can
   change between 16:9 and 4:3 from one screen to the next.
-- **Platforms.** All four release builds pass CI. Which platforms the game
-  has been played on is not yet documented, so treat every platform as
-  untested until reported otherwise.
+- **Platforms.** All four release builds pass CI. Manual runtime testing,
+  including native 16:9 widescreen, has been done on macOS Intel (x64) only.
+  Windows x64, Linux x64 and macOS Apple Silicon builds pass CI but have no
+  documented manual runtime testing yet.
 
 Please report problems on the
 [issue tracker](https://github.com/PeriBluGaming/BugsBunnyLostinTimeRecomp/issues).
